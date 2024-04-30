@@ -13,7 +13,7 @@ class Asteroid {
 const ORIGIN_LINE = 200;
 const SHIELD_DIAMETER = 60;
 const SHIELD_RADIUS = SHIELD_DIAMETER / 2;
-
+const SHIELD_LENGTH = 45;
 
 /* ========== Variables ========== */
 /** (mouseX, mouseY) --> Cortesian (coordinateX, coordinateY) */
@@ -44,7 +44,8 @@ function draw() {
     /* drawing */
     push();
 	translate(200, 200);
-    rotate(reverseAngle(currentAngle));
+    // rotate(reverseAngle(currentAngle));
+    rotate(-currentAngle);
     translate(-200, -200);
     drawShield();
     pop();
@@ -69,7 +70,7 @@ function drawShield() {
     noFill();
     stroke(0, 0, 255);
     strokeWeight(2);
-    arc(ORIGIN_LINE, ORIGIN_LINE, SHIELD_DIAMETER, SHIELD_DIAMETER, -45, 0);
+    arc(ORIGIN_LINE, ORIGIN_LINE, SHIELD_DIAMETER, SHIELD_DIAMETER, -SHIELD_LENGTH, 0);
     strokeWeight(1);
 }
 
@@ -148,10 +149,6 @@ function getQuadrant() {
     }
 }
 
-
-function reverseAngle(inp) {
-    return 360 - inp;
-}
 
 /* ========== Utility Functions ========== */
 
