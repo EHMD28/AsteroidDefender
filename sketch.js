@@ -15,20 +15,29 @@ const SHIELD_DIAMETER = 60;
 const SHIELD_RADIUS = SHIELD_DIAMETER / 2;
 const SHIELD_LENGTH = 45;
 
+const ASTEROID_SPAWN_RADIUS = 175;
+const ASTEROID_DIAMETER = 25;
+
 /* ========== Variables ========== */
-/** (mouseX, mouseY) --> Cortesian (coordinateX, coordinateY) */
+/** (mouseX, mouseY) --> Cortesian (coordinateX, coordinateY) --> degress (with (200, 200) as origin) */
 let coordinateX = 0;
 let coordinateY = 0;
 let currentQuadrant = 0;
 let currentAngle = 0;
 
 let points = 10;
+let asteroids = [];
 
 
 function setup() {
     createCanvas(400, 400);
     angleMode(DEGREES);
     textAlign(CENTER);
+
+    /* DEBUGGING */
+    for (let i = 0; i < 5; i++) {
+        spawnNewAsteroid();
+    }
 }
 
 
@@ -50,6 +59,7 @@ function draw() {
     drawShield();
     pop();
     drawPlayer();
+    drawAsteroids();
 
     // printCoordinates();
     // printMouseAngle();
@@ -75,7 +85,19 @@ function drawShield() {
 }
 
 
-function drawAsteroids() {}
+function drawAsteroids() {
+    let asteroidX = 0;
+    let asteroidY = 0;
+    
+    fill(150);
+
+    asteroids.forEach((value) => {
+        asteroidX = cos(value.angle) * value.distance;
+        asteroidY = sin(value.angle) * value.distance;
+        ellipse(asteroidX, asteroidY, ASTEROID_DIAMETER);
+        // console.debug(`New Asteroid: (${Math.round(asteroidX)}, ${Math.round(asteroidY)}, ${value.angle})`);
+    });
+}
 
 
 /* ========== Angle-Coordinate Conversion Functions ========== */
@@ -114,6 +136,10 @@ function coordinateToAngle(cx, cy) {
 }
 
 
+function angleToCortesian() {
+
+}
+
 function mousePosToCortesian() {
     switch (currentQuadrant) {
         case 1:
@@ -149,6 +175,22 @@ function getQuadrant() {
     }
 }
 
+
+function cortesianToPosition(n) {
+    return ORIGIN_LINE + n;
+}
+
+/* ========== Asteroid Functions ========== */
+
+function spawnNewAsteroid() {
+    const asteroidAngle = random(0, 360);
+    asteroids.push(new Asteroid(asteroidAngle, ASTEROID_SPAWN_RADIUS));
+}
+
+
+function checkDestroyAsteroids() {
+
+}
 
 /* ========== Utility Functions ========== */
 
