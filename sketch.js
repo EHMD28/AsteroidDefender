@@ -23,48 +23,67 @@ const ASTEROID_DIAMETER = 25;
 let coordinateX = 0;
 let coordinateY = 0;
 let currentQuadrant = 0;
-let currentAngle = 0;
+let shieldAngle = 0;
 
 let points = 10;
 let asteroids = [];
 
+let hasLost = false;
 
 function setup() {
     createCanvas(400, 400);
     angleMode(DEGREES);
     textAlign(CENTER);
 
-    /* DEBUGGING */
-    for (let i = 0; i < 5; i++) {
-        spawnNewAsteroid();
-    }
+    setInterval(spawnNewAsteroid, 2000);
 }
 
 
 function draw() {
+    if (points === 0) {
+        showLossScreen();
+    } else {
+        runGame();
+    }
+}
+
+
+/* ========== Game Screens ========== */
+
+function runGame() {
     background(200);
     drawOriginLines();
 
     /* calculations */
     currentQuadrant = getQuadrant();
     mousePosToCortesian();
-    currentAngle = coordinateToAngle(coordinateX, coordinateY);
+    shieldAngle = coordinateToAngle(coordinateX, coordinateY);
 
     /* drawing */
     push();
-	translate(200, 200);
+    translate(200, 200);
     // rotate(reverseAngle(currentAngle));
-    rotate(-currentAngle);
+    rotate(-shieldAngle);
     translate(-200, -200);
     drawShield();
     pop();
+
+    /* changing and checking */
+    moveAsteroidsTowardsCenter();
+    checkDestroyAsteroids();
+    checkDamagePlayer();
+
     drawPlayer();
     drawAsteroids();
 
-    // printCoordinates();
-    // printMouseAngle();
 }
 
+function showLossScreen() {
+    background(0);
+    textSize(50);
+    fill(255, 0, 0);
+    text("YOU LOST", ORIGIN_LINE, ORIGIN_LINE);
+}
 
 /* ========== Drawing Functions ========== */
 
@@ -88,12 +107,12 @@ function drawShield() {
 function drawAsteroids() {
     let asteroidX = 0;
     let asteroidY = 0;
-    
+
     fill(150);
 
     asteroids.forEach((value) => {
-        asteroidX = cos(value.angle) * value.distance;
-        asteroidY = sin(value.angle) * value.distance;
+        asteroidX = cortesianToPosition(cos(value.angle) * value.distance);
+        asteroidY = cortesianToPosition(sin(value.angle) * value.distance);
         ellipse(asteroidX, asteroidY, ASTEROID_DIAMETER);
         // console.debug(`New Asteroid: (${Math.round(asteroidX)}, ${Math.round(asteroidY)}, ${value.angle})`);
     });
@@ -115,9 +134,9 @@ function coordinateToAngle(cx, cy) {
         (-200, 0) -> 180
         (-200, -200) -> 270
     */
-    
+
     let totalAngle = 0;
-    let referenceAngle = atan(cy/cx);
+    let referenceAngle = atan(cy / cx);
 
     switch (currentQuadrant) {
         case 1:
@@ -139,6 +158,7 @@ function coordinateToAngle(cx, cy) {
 function angleToCortesian() {
 
 }
+
 
 function mousePosToCortesian() {
     switch (currentQuadrant) {
@@ -180,20 +200,66 @@ function cortesianToPosition(n) {
     return ORIGIN_LINE + n;
 }
 
+
+function reverseAngle(n) {
+    return 360 - n;
+}
+
+
 /* ========== Asteroid Functions ========== */
 
 function spawnNewAsteroid() {
-    const asteroidAngle = random(0, 360);
+    const asteroidAngle = random(0, 360); 
     asteroids.push(new Asteroid(asteroidAngle, ASTEROID_SPAWN_RADIUS));
 }
 
 
 function checkDestroyAsteroids() {
+    if (asteroids.length === 0) return;
+
+    const aDistance = asteroids[0].distance;
+    const aAngle = reverseAngle(asteroids[0].angle);
+
+    
+    /* only need to check the first asteroid, since it will be the closest */
+    const isClose = (aDistance <= (SHIELD_RADIUS + 10)) && (aDistance >= SHIELD_RADIUS);
+    const isBlocked = (aAngle > shieldAngle) && (aAngle < (shieldAngle + SHIELD_LENGTH));
+    
+    if (isClose && isBlocked) {
+        asteroids.shift();
+    }
 
 }
 
+
+function checkDamagePlayer() {
+    if (asteroids.length === 0) return;
+
+    if (asteroids[0].distance <= 0) {
+        points--;
+        asteroids.shift();
+    }
+
+}
+
+
+function moveAsteroidsTowardsCenter() {
+    asteroids.forEach(v => v.distance--);
+}
+
+
 /* ========== Utility Functions ========== */
 
+/**
+ * 
+ * @param {number} n 
+ * @param {number} min 
+ * @param {number} max inclusive 
+ * @returns 
+ */
+function inRange(n, min, max) {
+    return (n > min) && (n <= max);
+}
 
 /* ========== Debugging Functions ========== */
 function drawOriginLines() {
@@ -202,8 +268,18 @@ function drawOriginLines() {
     line(ORIGIN_LINE, 0, ORIGIN_LINE, height);
 }
 
+
+function drawAsteroidSpawnCircle() {
+    noFill();
+    stroke(252, 2, 248);
+    strokeWeight(2);
+    ellipse(ORIGIN_LINE, ORIGIN_LINE, ASTEROID_SPAWN_RADIUS * 2);
+    strokeWeight(1);
+}
+
+
 function printMouseAngle() {
-    console.log(`Current Angle: ${round(currentAngle)} | Quadrant: ${currentQuadrant}`);
+    console.log(`Current Angle: ${round(shieldAngle)} | Quadrant: ${currentQuadrant}`);
 }
 
 function printCoordinates() {
