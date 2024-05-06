@@ -52,7 +52,7 @@ function draw() {
 
 function runGame() {
     background(200);
-    drawOriginLines();
+    // drawOriginLines();
 
     /* calculations */
     currentQuadrant = getQuadrant();
