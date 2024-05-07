@@ -36,7 +36,10 @@ function setup() {
     angleMode(DEGREES);
     textAlign(CENTER);
 
+    
     setInterval(spawnNewAsteroid, 2000);
+    /* speed of asteroids increase as time goes on, starts at 1, maxes at 5 */
+    setInterval(() => asteroidsSpeed += 0.1, 2000);
 }
 
 
@@ -255,7 +258,7 @@ function checkDamagePlayer() {
 
 
 function moveAsteroidsTowardsCenter() {
-    asteroids.forEach(v => v.distance--);
+    asteroids.forEach(v => v.distance -= asteroidsSpeed);
 }
 
 
