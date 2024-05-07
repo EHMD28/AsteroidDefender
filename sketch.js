@@ -27,6 +27,7 @@ let shieldAngle = 0;
 
 let points = 10;
 let asteroids = [];
+let asteroidsSpeed = 1;
 
 let hasLost = false;
 
@@ -44,6 +45,7 @@ function draw() {
         showLossScreen();
     } else {
         runGame();
+        printDebugInfo();
     }
 }
 
@@ -217,13 +219,22 @@ function spawnNewAsteroid() {
 function checkDestroyAsteroids() {
     if (asteroids.length === 0) return;
 
+    /* only need to check the first asteroid, since it will be the closest */
     const aDistance = asteroids[0].distance;
     const aAngle = reverseAngle(asteroids[0].angle);
 
+    let isClose;
+    let isBlocked;
+
+    /* edge case for when shield crosses 360 deg and aAngle is near 360 deg */
+    if ((aAngle < SHIELD_LENGTH) && ((shieldAngle + SHIELD_LENGTH) > 360)) {
+        isBlocked = ((aAngle + 360) > shieldAngle) && ((aAngle + 360) < (shieldAngle + SHIELD_LENGTH));
+    }
+    else {
+        isBlocked = (aAngle > shieldAngle) && (aAngle < (shieldAngle + SHIELD_LENGTH));
+    }
     
-    /* only need to check the first asteroid, since it will be the closest */
-    const isClose = (aDistance <= (SHIELD_RADIUS + 10)) && (aDistance >= SHIELD_RADIUS);
-    const isBlocked = (aAngle > shieldAngle) && (aAngle < (shieldAngle + SHIELD_LENGTH));
+    isClose = (aDistance <= (SHIELD_RADIUS + 10)) && (aDistance >= SHIELD_RADIUS);
     
     if (isClose && isBlocked) {
         asteroids.shift();
@@ -261,6 +272,7 @@ function inRange(n, min, max) {
     return (n > min) && (n <= max);
 }
 
+
 /* ========== Debugging Functions ========== */
 function drawOriginLines() {
     stroke(0);
@@ -282,6 +294,13 @@ function printMouseAngle() {
     console.log(`Current Angle: ${round(shieldAngle)} | Quadrant: ${currentQuadrant}`);
 }
 
+
 function printCoordinates() {
     console.log(`(${coordinateX}, ${coordinateY})`);
+}
+
+
+function printDebugInfo() {
+    fill(0);
+    text(`Shield Angle: ${round(shieldAngle)} | Asteroids[0] Angle: ${round(reverseAngle(asteroids[0]?.angle))}`, width - 200, 50);
 }
