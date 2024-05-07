@@ -1,9 +1,10 @@
 /* ========== Classes ========== */
 
 class Asteroid {
-    constructor(angle, distance) {
+    constructor(angle, distance, direction) {
         this.angle = angle;
         this.distance = distance;
+        this.direction = direction;
     };
 };
 
@@ -18,6 +19,9 @@ const SHIELD_LENGTH = 45;
 const ASTEROID_SPAWN_RADIUS = 175;
 const ASTEROID_DIAMETER = 25;
 
+const TOWARDS_ORIGIN = 1;
+const AWAY_FROM_ORIGIN = -1;
+
 /* ========== Variables ========== */
 /** (mouseX, mouseY) --> Cortesian (coordinateX, coordinateY) --> degress (with (200, 200) as origin) */
 let coordinateX = 0;
@@ -28,16 +32,19 @@ let shieldAngle = 0;
 let points = 10;
 let asteroids = [];
 let asteroidsSpeed = 1;
+let asteroidsBlocked
 
 let hasLost = false;
 let timeLasted = 0.0;
+
+/* ========== Setup and Draw ========== */
 
 function setup() {
     createCanvas(400, 400);
     angleMode(DEGREES);
     textAlign(CENTER);
 
-    
+
     setInterval(spawnNewAsteroid, 2000);
     /* speed of asteroids increase as time goes on, starts at 1, maxes at 5 */
     setInterval(() => asteroidsSpeed += 0.1, 4000);
@@ -75,13 +82,14 @@ function runGame() {
     pop();
 
     /* changing and checking */
-    moveAsteroidsTowardsCenter();
-    checkDestroyAsteroids();
+    moveAsteroids();
+    checkBounceAsteroids();
+    destroyOffscreenAsteroids();
     checkDamagePlayer();
-    
+
     drawPlayer();
     drawAsteroids();
-    
+
     /* updtating time lasted */
     timeLasted = millis();
 }
@@ -132,19 +140,7 @@ function drawAsteroids() {
 
 /* ========== Angle-Coordinate Conversion Functions ========== */
 
-/**
- * converts Cortesian coordinate to angle in degrees
- * 
- * @param {number} cx coordinate-x
- * @param {number} cy coordinate-y
- */
 function coordinateToAngle(cx, cy) {
-    /*
-        (200, 0) -> 0 [360]
-        (0, 200) -> 90
-        (-200, 0) -> 180
-        (-200, -200) -> 270
-    */
 
     let totalAngle = 0;
     let referenceAngle = atan(cy / cx);
@@ -220,34 +216,38 @@ function reverseAngle(n) {
 /* ========== Asteroid Functions ========== */
 
 function spawnNewAsteroid() {
-    const asteroidAngle = random(0, 360); 
-    asteroids.push(new Asteroid(asteroidAngle, ASTEROID_SPAWN_RADIUS));
+    const asteroidAngle = random(0, 360);
+    asteroids.push(new Asteroid(asteroidAngle, ASTEROID_SPAWN_RADIUS, TOWARDS_ORIGIN));
 }
 
 
-function checkDestroyAsteroids() {
+function checkBounceAsteroids() {
     if (asteroids.length === 0) return;
 
-    /* only need to check the first asteroid, since it will be the closest */
-    const aDistance = asteroids[0].distance;
-    const aAngle = reverseAngle(asteroids[0].angle);
+    let isClose = false;
+    let isBlocked = false;
 
-    let isClose;
-    let isBlocked;
+    let aAngle = 0;
+    let aDistance = 0;
 
-    /* edge case for when shield crosses 360 deg and aAngle is near 360 deg */
-    if ((aAngle < SHIELD_LENGTH) && ((shieldAngle + SHIELD_LENGTH) > 360)) {
-        isBlocked = ((aAngle + 360) > shieldAngle) && ((aAngle + 360) < (shieldAngle + SHIELD_LENGTH));
-    }
-    else {
-        isBlocked = (aAngle > shieldAngle) && (aAngle < (shieldAngle + SHIELD_LENGTH));
-    }
-    
-    isClose = (aDistance <= (SHIELD_RADIUS + 10)) && (aDistance >= SHIELD_RADIUS);
-    
-    if (isClose && isBlocked) {
-        asteroids.shift();
-    }
+    asteroids.forEach((value) => {
+        aDistance = value.distance;
+        aAngle = reverseAngle(value.angle);
+
+        /* edge case when asteroid is near 360 deg and shield passes over 360 deg */
+        if ((aAngle < SHIELD_LENGTH) && ((shieldAngle + SHIELD_LENGTH) > 360)) {
+            isBlocked = ((aAngle + 360) > shieldAngle) && ((aAngle + 360) < (shieldAngle + SHIELD_LENGTH));
+        }
+        else {
+            isBlocked = (aAngle > shieldAngle) && (aAngle < (shieldAngle + SHIELD_LENGTH));
+        }
+
+        isClose = (aDistance <= (SHIELD_RADIUS + 10)) && (aDistance >= SHIELD_RADIUS);
+
+        if (isBlocked && isClose) {
+            value.direction = AWAY_FROM_ORIGIN;
+        }
+    });
 
 }
 
@@ -263,8 +263,18 @@ function checkDamagePlayer() {
 }
 
 
-function moveAsteroidsTowardsCenter() {
-    asteroids.forEach(v => v.distance -= asteroidsSpeed);
+function moveAsteroids() {
+    asteroids.forEach(v => v.distance -= (asteroidsSpeed * v.direction));
+}
+
+
+function destroyOffscreenAsteroids() {
+    if (asteroids.length === 0) return;
+    
+    let i = 0;
+    while (asteroids[i].distance > ASTEROID_SPAWN_RADIUS) {
+        asteroids.shift();
+    }
 }
 
 
