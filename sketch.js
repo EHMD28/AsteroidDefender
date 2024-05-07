@@ -86,13 +86,14 @@ function runGame() {
     timeLasted = millis();
 }
 
+
 function showLossScreen() {
     background(0);
     textSize(50);
-    fill(92, 0, 4);
+    fill(155, 0, 10);
     text("YOU LOST", ORIGIN_LINE, ORIGIN_LINE);
     textSize(20);
-    text(`You Lasted ${millisToHMS(timeLasted)} seconds`, ORIGIN_LINE, ORIGIN_LINE + 50);
+    text(`You Lasted ${millisToMS(timeLasted)} minutes`, ORIGIN_LINE, ORIGIN_LINE + 50);
 }
 
 /* ========== Drawing Functions ========== */
@@ -281,16 +282,16 @@ function inRange(n, min, max) {
 }
 
 
-function millisToHMS(ms) {
-    const hours = floor(ms / 3_600_000);
-    const minutes = floor((ms - hours) / 60_000);
-    const seconds = floor((ms - hours - minutes) / 1_000);
+function millisToMS(ms) {
+    const minutes = floor(ms / 60_000);
+    const seconds = (ms - (minutes * 60_000)) / 1000;
 
-    return `${hours}:${minutes}:${seconds}`;
+    return `${minutes}:${floor(seconds)}`
 }
 
 
 /* ========== Debugging Functions ========== */
+
 function drawOriginLines() {
     stroke(0);
     line(0, ORIGIN_LINE, width, ORIGIN_LINE);
