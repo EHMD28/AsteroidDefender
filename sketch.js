@@ -30,6 +30,7 @@ let asteroids = [];
 let asteroidsSpeed = 1;
 
 let hasLost = false;
+let timeLasted = 0.0;
 
 function setup() {
     createCanvas(400, 400);
@@ -77,17 +78,21 @@ function runGame() {
     moveAsteroidsTowardsCenter();
     checkDestroyAsteroids();
     checkDamagePlayer();
-
+    
     drawPlayer();
     drawAsteroids();
-
+    
+    /* updtating time lasted */
+    timeLasted = millis();
 }
 
 function showLossScreen() {
     background(0);
     textSize(50);
-    fill(255, 0, 0);
+    fill(92, 0, 4);
     text("YOU LOST", ORIGIN_LINE, ORIGIN_LINE);
+    textSize(20);
+    text(`You Lasted ${millisToHMS(timeLasted)} seconds`, ORIGIN_LINE, ORIGIN_LINE + 50);
 }
 
 /* ========== Drawing Functions ========== */
@@ -273,6 +278,15 @@ function moveAsteroidsTowardsCenter() {
  */
 function inRange(n, min, max) {
     return (n > min) && (n <= max);
+}
+
+
+function millisToHMS(ms) {
+    const hours = floor(ms / 3_600_000);
+    const minutes = floor((ms - hours) / 60_000);
+    const seconds = floor((ms - hours - minutes) / 1_000);
+
+    return `${hours}:${minutes}:${seconds}`;
 }
 
 
