@@ -39,7 +39,8 @@ function setup() {
     
     setInterval(spawnNewAsteroid, 2000);
     /* speed of asteroids increase as time goes on, starts at 1, maxes at 5 */
-    setInterval(() => asteroidsSpeed += 0.1, 2000);
+    setInterval(() => asteroidsSpeed += 0.1, 4000);
+    constrain(asteroidsSpeed, 1, 5);
 }
 
 
@@ -48,7 +49,6 @@ function draw() {
         showLossScreen();
     } else {
         runGame();
-        printDebugInfo();
     }
 }
 
