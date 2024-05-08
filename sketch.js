@@ -18,6 +18,7 @@ const SHIELD_LENGTH = 45;
 
 const ASTEROID_SPAWN_RADIUS = 175;
 const ASTEROID_DIAMETER = 25;
+const ASTEROID_RADIUS = ASTEROID_DIAMETER / 2;
 
 const TOWARDS_ORIGIN = 1;
 const AWAY_FROM_ORIGIN = -1;
@@ -270,11 +271,19 @@ function moveAsteroids() {
 
 function destroyOffscreenAsteroids() {
     if (asteroids.length === 0) return;
-    
-    let i = 0;
-    while (asteroids[i].distance > ASTEROID_SPAWN_RADIUS) {
-        asteroids.shift();
-    }
+
+    let positionX = 0;
+    let positionY = 0;
+
+    asteroids.forEach(v => {
+        positionX = cortesianToPosition(cos(v.angle) * v.distance);
+        positionY = cortesianToPosition(sin(v.angle) * v.distance);
+        
+        if ( isOffscreen(positionX, positionY) ) {
+            asteroids.shift();
+        }
+
+    });
 }
 
 
@@ -298,7 +307,12 @@ function millisToMS(ms) {
 
     return `${minutes}:${floor(seconds)}`
 }
+ 
 
+function isOffscreen(px, py) {
+    return ((px + ASTEROID_RADIUS) < 0) || ((px - ASTEROID_RADIUS) > width)
+            || ((py + ASTEROID_RADIUS) < 0) || ((py - ASTEROID_RADIUS) > height);
+}
 
 /* ========== Debugging Functions ========== */
 
