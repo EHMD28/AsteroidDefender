@@ -302,10 +302,18 @@ function inRange(n, min, max) {
 
 
 function millisToMS(ms) {
-    const minutes = floor(ms / 60_000);
-    const seconds = (ms - (minutes * 60_000)) / 1000;
+    let minutes = floor(ms / 60_000);
+    let seconds = floor((ms - (minutes * 60_000)) / 1000);
 
-    return `${minutes}:${floor(seconds)}`
+    if (minutes < 10) {
+        minutes = `0${minutes}`;
+    }
+
+    if (seconds < 10) {
+        seconds = `0${seconds}`;
+    }
+
+    return `${minutes}:${seconds}`
 }
  
 
